@@ -13,42 +13,63 @@ class CountdownTimerDemo extends StatefulWidget {
 }
 
 class _CountdownTimerDemoState extends State<CountdownTimerDemo> {
-  // Step 2
   Timer? countdownTimer;
-  Duration myDuration = Duration(days: 5);
+  Timer? otpTimer;
+  Duration countdownDuration = Duration(hours: 1); //Duration(days: 5);
+  Duration otpDuration = Duration(minutes: 2);
 
   @override
   void initState() {
     super.initState();
   }
 
-  /// Timer related methods ///
-  // Step 3
-  void startTimer() {
+  void startCountdownTimer() {
     countdownTimer =
-        Timer.periodic(Duration(seconds: 1), (_) => setCountDown());
+        Timer.periodic(Duration(seconds: 1), (_) => setCountdown());
   }
 
-  // Step 4
-  void stopTimer() {
-    setState(() => countdownTimer!.cancel());
+  void stopCountdownTimer() {
+    setState(() => countdownTimer?.cancel());
   }
 
-  // Step 5
-  void resetTimer() {
-    stopTimer();
-    setState(() => myDuration = Duration(days: 5));
+  void resetCountdownTimer() {
+    stopCountdownTimer();
+    setState(() => countdownDuration = Duration(hours: 1));
   }
 
-  // Step 6
-  void setCountDown() {
+  void setCountdown() {
     final reduceSecondsBy = 1;
     setState(() {
-      final seconds = myDuration.inSeconds - reduceSecondsBy;
+      final seconds = countdownDuration.inSeconds - reduceSecondsBy;
       if (seconds < 0) {
-        countdownTimer!.cancel();
+        countdownTimer?.cancel();
       } else {
-        myDuration = Duration(seconds: seconds);
+        countdownDuration = Duration(seconds: seconds);
+      }
+    });
+  }
+
+  void startOtpTimer() {
+    otpTimer = Timer.periodic(Duration(seconds: 1), (_) => setOtpCountdown());
+  }
+
+  void stopOtpTimer() {
+    setState(() => otpTimer?.cancel());
+  }
+
+  void resetOtpTimer() {
+    stopOtpTimer();
+    setState(() => otpDuration = Duration(minutes: 2));
+  }
+
+  void setOtpCountdown() {
+    final reduceSecondsBy = 1;
+    setState(() {
+      final seconds = otpDuration.inSeconds - reduceSecondsBy;
+      if (seconds < 0) {
+        otpTimer?.cancel();
+      } else {
+        otpDuration = Duration(seconds: seconds);
       }
     });
   }
@@ -56,62 +77,83 @@ class _CountdownTimerDemoState extends State<CountdownTimerDemo> {
   @override
   Widget build(BuildContext context) {
     String strDigits(int n) => n.toString().padLeft(2, '0');
-    final days = strDigits(myDuration.inDays); // <-- Step 7
-    final hours = strDigits(myDuration.inHours.remainder(24));
-    final minutes = strDigits(myDuration.inMinutes.remainder(60));
-    final seconds = strDigits(myDuration.inSeconds.remainder(60));
+    final countdownDays = strDigits(countdownDuration.inDays);
+    final countdownHours = strDigits(countdownDuration.inHours.remainder(24));
+    final countdownMinutes =
+        strDigits(countdownDuration.inMinutes.remainder(60));
+    final countdownSeconds =
+        strDigits(countdownDuration.inSeconds.remainder(60));
+
+    final otpSeconds = strDigits(otpDuration.inSeconds);
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Countdown Timer Demo Aithan'),
+        title: Text('Countdown Timers'),
       ),
       body: Center(
         child: Column(
           children: [
             SizedBox(
-              height: 50,
+              height: 20,
+            ),
+            // NORMAL COUNTDOWN PART ----------------------------------------------------
+            Text(
+              'Countdown Timer:',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             Text(
-              '$days:$hours:$minutes:$seconds',
+              '$countdownDays:$countdownHours:$countdownMinutes:$countdownSeconds',
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 color: Colors.black,
-                fontSize: 50,
-              ),
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: startTimer,
-              child: Text(
-                'Start',
-                style: TextStyle(
-                  fontSize: 30,
-                ),
+                fontSize: 24,
               ),
             ),
             ElevatedButton(
-              onPressed: () {
-                if (countdownTimer == null || countdownTimer!.isActive) {
-                  stopTimer();
-                }
-              },
-              child: Text(
-                'Stop',
-                style: TextStyle(
-                  fontSize: 30,
-                ),
+              onPressed: startCountdownTimer,
+              child: Text('Start Countdown'),
+            ),
+            ElevatedButton(
+              onPressed: stopCountdownTimer,
+              child: Text('Stop Countdown'),
+            ),
+            ElevatedButton(
+              onPressed: resetCountdownTimer,
+              child: Text('Reset Countdown'),
+            ),
+            SizedBox(
+              height: 20,
+            ),
+            // OTP PART ----------------------------------------------------------
+            Text(
+              'OTP Countdown Timer:',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            Text(
+              'Time Remaining: $otpSeconds seconds',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+                fontSize: 24,
               ),
             ),
             ElevatedButton(
-              onPressed: () {
-                resetTimer();
-              },
-              child: Text(
-                'Reset',
-                style: TextStyle(
-                  fontSize: 30,
-                ),
-              ),
+              onPressed: startOtpTimer,
+              child: Text('Send OTP'),
+            ),
+            ElevatedButton(
+              onPressed: stopOtpTimer,
+              child: Text('Stop OTP'),
+            ),
+            ElevatedButton(
+              onPressed: resetOtpTimer,
+              child: Text('Reset OTP'),
             ),
           ],
         ),
