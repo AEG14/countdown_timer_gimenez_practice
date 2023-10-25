@@ -88,6 +88,8 @@ class _PomodoroTimerDemoState extends State<PomodoroTimerDemo> {
         title: Center(child: Text('Pomodoro')),
         backgroundColor: Color(0XFF1e1b2e),
       ),
+      resizeToAvoidBottomInset:
+          false, // Prevent content from resizing to avoid the keyboard
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -137,7 +139,7 @@ class _PomodoroTimerDemoState extends State<PomodoroTimerDemo> {
                             style: TextStyle(fontSize: 20)),
                         style: ButtonStyle(
                           backgroundColor: MaterialStateProperty.all<Color>(
-                              Color(0XFF674fff)),
+                              Color(0XFF1e1b2e)),
                           minimumSize: MaterialStateProperty.all(Size(150, 50)),
                         ),
                       ),
@@ -150,7 +152,7 @@ class _PomodoroTimerDemoState extends State<PomodoroTimerDemo> {
                           child: Text('Reset', style: TextStyle(fontSize: 20)),
                           style: ButtonStyle(
                             backgroundColor: MaterialStateProperty.all<Color>(
-                                Color(0XFF674fff)),
+                                Color(0XFF1e1b2e)),
                             minimumSize:
                                 MaterialStateProperty.all(Size(150, 50)),
                           ),
@@ -162,57 +164,61 @@ class _PomodoroTimerDemoState extends State<PomodoroTimerDemo> {
               SizedBox(
                 height: 50,
               ),
-              ElevatedButton(
-                style: ButtonStyle(
-                  backgroundColor:
-                      MaterialStateProperty.all<Color>(Color(0XFF674fff)),
-                  minimumSize: MaterialStateProperty.all(Size(250, 80)),
-                ),
-                onPressed: () {
-                  showDialog(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return AlertDialog(
-                        title: Text('Edit Timer Durations'),
-                        content: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: <Widget>[
-                            TextField(
-                              keyboardType: TextInputType.number,
-                              decoration: InputDecoration(
-                                labelText: 'Work Minutes',
-                              ),
-                              onChanged: (value) {
-                                workDuration =
-                                    int.tryParse(value) ?? workDuration;
-                              },
+              Container(
+                child: ElevatedButton(
+                  style: ButtonStyle(
+                    backgroundColor:
+                        MaterialStateProperty.all<Color>(Color(0XFF1e1b2e)),
+                    minimumSize: MaterialStateProperty.all(Size(250, 80)),
+                  ),
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: Text('Edit Timer Durations'),
+                          content: SingleChildScrollView(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: <Widget>[
+                                TextField(
+                                  keyboardType: TextInputType.number,
+                                  decoration: InputDecoration(
+                                    labelText: 'Work Minutes',
+                                  ),
+                                  onChanged: (value) {
+                                    workDuration =
+                                        int.tryParse(value) ?? workDuration;
+                                  },
+                                ),
+                                TextField(
+                                  keyboardType: TextInputType.number,
+                                  decoration: InputDecoration(
+                                    labelText: 'Break Minutes',
+                                  ),
+                                  onChanged: (value) {
+                                    breakDuration =
+                                        int.tryParse(value) ?? breakDuration;
+                                  },
+                                ),
+                              ],
                             ),
-                            TextField(
-                              keyboardType: TextInputType.number,
-                              decoration: InputDecoration(
-                                labelText: 'Break Minutes',
-                              ),
-                              onChanged: (value) {
-                                breakDuration =
-                                    int.tryParse(value) ?? breakDuration;
+                          ),
+                          actions: <Widget>[
+                            TextButton(
+                              child: Text('Save'),
+                              onPressed: () {
+                                editTimings(workDuration, breakDuration);
+                                Navigator.of(context).pop();
                               },
                             ),
                           ],
-                        ),
-                        actions: <Widget>[
-                          TextButton(
-                            child: Text('Save'),
-                            onPressed: () {
-                              editTimings(workDuration, breakDuration);
-                              Navigator.of(context).pop();
-                            },
-                          ),
-                        ],
-                      );
-                    },
-                  );
-                },
-                child: Text('Edit Durations', style: TextStyle(fontSize: 32)),
+                        );
+                      },
+                    );
+                  },
+                  child: Text('Edit Durations', style: TextStyle(fontSize: 32)),
+                ),
               ),
             ],
           ),
