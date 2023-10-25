@@ -3,159 +3,219 @@ import 'dart:async';
 
 void main() {
   runApp(MaterialApp(
-    home: CountdownTimerDemo(),
+    home: PomodoroTimerDemo(),
   ));
 }
 
-class CountdownTimerDemo extends StatefulWidget {
+class PomodoroTimerDemo extends StatefulWidget {
   @override
-  _CountdownTimerDemoState createState() => _CountdownTimerDemoState();
+  _PomodoroTimerDemoState createState() => _PomodoroTimerDemoState();
 }
 
-class _CountdownTimerDemoState extends State<CountdownTimerDemo> {
-  Timer? countdownTimer;
-  Timer? otpTimer;
-  Duration countdownDuration = Duration(hours: 1); //Duration(days: 5);
-  Duration otpDuration = Duration(minutes: 2);
+class _PomodoroTimerDemoState extends State<PomodoroTimerDemo> {
+  Timer? timer;
+  int workDuration = 25;
+  int breakDuration = 5;
+  int? currentDuration;
+  bool isRunning = false;
+  bool isWorkTime = true;
 
   @override
   void initState() {
     super.initState();
   }
 
-  void startCountdownTimer() {
-    countdownTimer =
-        Timer.periodic(Duration(seconds: 1), (_) => setCountdown());
-  }
+  void startTimer() {
+    if (currentDuration == null) {
+      currentDuration = workDuration * 60;
+    }
 
-  void stopCountdownTimer() {
-    setState(() => countdownTimer?.cancel());
-  }
-
-  void resetCountdownTimer() {
-    stopCountdownTimer();
-    setState(() => countdownDuration = Duration(hours: 1));
-  }
-
-  void setCountdown() {
-    final reduceSecondsBy = 1;
-    setState(() {
-      final seconds = countdownDuration.inSeconds - reduceSecondsBy;
-      if (seconds < 0) {
-        countdownTimer?.cancel();
+    timer = Timer.periodic(Duration(seconds: 1), (timer) {
+      if (currentDuration! <= 0) {
+        if (isWorkTime) {
+          currentDuration = breakDuration * 60;
+        } else {
+          currentDuration = workDuration * 60;
+        }
+        timer.cancel();
+        isWorkTime = !isWorkTime;
+        startTimer();
       } else {
-        countdownDuration = Duration(seconds: seconds);
+        setState(() {
+          currentDuration = currentDuration! - 1;
+        });
       }
+    });
+
+    setState(() {
+      isRunning = true;
     });
   }
 
-  void startOtpTimer() {
-    otpTimer = Timer.periodic(Duration(seconds: 1), (_) => setOtpCountdown());
-  }
-
-  void stopOtpTimer() {
-    setState(() => otpTimer?.cancel());
-  }
-
-  void resetOtpTimer() {
-    stopOtpTimer();
-    setState(() => otpDuration = Duration(minutes: 2));
-  }
-
-  void setOtpCountdown() {
-    final reduceSecondsBy = 1;
+  void pauseTimer() {
+    timer?.cancel();
     setState(() {
-      final seconds = otpDuration.inSeconds - reduceSecondsBy;
-      if (seconds < 0) {
-        otpTimer?.cancel();
-      } else {
-        otpDuration = Duration(seconds: seconds);
-      }
+      isRunning = false;
     });
+  }
+
+  void resetTimer() {
+    timer?.cancel();
+    setState(() {
+      isRunning = false;
+      currentDuration = null;
+    });
+  }
+
+  void editTimings(int workMinutes, int breakMinutes) {
+    workDuration = workMinutes;
+    breakDuration = breakMinutes;
+    if (!isRunning) {
+      currentDuration = null;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     String strDigits(int n) => n.toString().padLeft(2, '0');
-    final countdownDays = strDigits(countdownDuration.inDays);
-    final countdownHours = strDigits(countdownDuration.inHours.remainder(24));
-    final countdownMinutes =
-        strDigits(countdownDuration.inMinutes.remainder(60));
-    final countdownSeconds =
-        strDigits(countdownDuration.inSeconds.remainder(60));
-
-    final otpSeconds = strDigits(otpDuration.inSeconds);
+    String timerText = currentDuration == null
+        ? '${strDigits(workDuration)}:00'
+        : '${strDigits(currentDuration! ~/ 60)}:${strDigits(currentDuration! % 60)}';
 
     return Scaffold(
+      backgroundColor: Color(0XFF1e1b2e),
       appBar: AppBar(
-        title: Text('Countdown Timers'),
+        title: Center(child: Text('Pomodoro')),
+        backgroundColor: Color(0XFF1e1b2e),
       ),
-      body: Center(
-        child: Column(
-          children: [
-            SizedBox(
-              height: 20,
-            ),
-            // NORMAL COUNTDOWN PART ----------------------------------------------------
-            Text(
-              'Countdown Timer:',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF051960), Color(0xFF591DA9)],
+          ),
+        ),
+        child: Center(
+          child: Column(
+            children: [
+              SizedBox(
+                height: 50,
               ),
-            ),
-            Text(
-              '$countdownDays:$countdownHours:$countdownMinutes:$countdownSeconds',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
-                fontSize: 24,
+              Text(
+                isWorkTime ? 'Focus' : 'Rest',
+                style: TextStyle(
+                  fontSize: 70,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
               ),
-            ),
-            ElevatedButton(
-              onPressed: startCountdownTimer,
-              child: Text('Start Countdown'),
-            ),
-            ElevatedButton(
-              onPressed: stopCountdownTimer,
-              child: Text('Stop Countdown'),
-            ),
-            ElevatedButton(
-              onPressed: resetCountdownTimer,
-              child: Text('Reset Countdown'),
-            ),
-            SizedBox(
-              height: 20,
-            ),
-            // OTP PART ----------------------------------------------------------
-            Text(
-              'OTP Countdown Timer:',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
+              SizedBox(
+                height: 10,
               ),
-            ),
-            Text(
-              'Time Remaining: $otpSeconds seconds',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
-                fontSize: 24,
+              Text(
+                timerText,
+                style: TextStyle(
+                  fontWeight: FontWeight.normal,
+                  color: Colors.white,
+                  fontSize: 120,
+                ),
               ),
-            ),
-            ElevatedButton(
-              onPressed: startOtpTimer,
-              child: Text('Send OTP'),
-            ),
-            ElevatedButton(
-              onPressed: stopOtpTimer,
-              child: Text('Stop OTP'),
-            ),
-            ElevatedButton(
-              onPressed: resetOtpTimer,
-              child: Text('Reset OTP'),
-            ),
-          ],
+              SizedBox(
+                height: 60,
+              ),
+              Padding(
+                padding: const EdgeInsets.only(right: 16.0, left: 16.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(.0),
+                      child: ElevatedButton(
+                        onPressed: isRunning ? pauseTimer : startTimer,
+                        child: Text(isRunning ? 'Pause' : 'Start',
+                            style: TextStyle(fontSize: 20)),
+                        style: ButtonStyle(
+                          backgroundColor: MaterialStateProperty.all<Color>(
+                              Color(0XFF674fff)),
+                          minimumSize: MaterialStateProperty.all(Size(150, 50)),
+                        ),
+                      ),
+                    ),
+                    if (isRunning)
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: ElevatedButton(
+                          onPressed: resetTimer,
+                          child: Text('Reset', style: TextStyle(fontSize: 20)),
+                          style: ButtonStyle(
+                            backgroundColor: MaterialStateProperty.all<Color>(
+                                Color(0XFF674fff)),
+                            minimumSize:
+                                MaterialStateProperty.all(Size(150, 50)),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              SizedBox(
+                height: 50,
+              ),
+              ElevatedButton(
+                style: ButtonStyle(
+                  backgroundColor:
+                      MaterialStateProperty.all<Color>(Color(0XFF674fff)),
+                  minimumSize: MaterialStateProperty.all(Size(250, 80)),
+                ),
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: Text('Edit Timer Durations'),
+                        content: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: <Widget>[
+                            TextField(
+                              keyboardType: TextInputType.number,
+                              decoration: InputDecoration(
+                                labelText: 'Work Minutes',
+                              ),
+                              onChanged: (value) {
+                                workDuration =
+                                    int.tryParse(value) ?? workDuration;
+                              },
+                            ),
+                            TextField(
+                              keyboardType: TextInputType.number,
+                              decoration: InputDecoration(
+                                labelText: 'Break Minutes',
+                              ),
+                              onChanged: (value) {
+                                breakDuration =
+                                    int.tryParse(value) ?? breakDuration;
+                              },
+                            ),
+                          ],
+                        ),
+                        actions: <Widget>[
+                          TextButton(
+                            child: Text('Save'),
+                            onPressed: () {
+                              editTimings(workDuration, breakDuration);
+                              Navigator.of(context).pop();
+                            },
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                },
+                child: Text('Edit Durations', style: TextStyle(fontSize: 32)),
+              ),
+            ],
+          ),
         ),
       ),
     );

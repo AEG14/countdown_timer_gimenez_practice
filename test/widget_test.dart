@@ -13,7 +13,7 @@ import 'package:countdown_timer_gimenez_practice/main.dart';
 void main() {
   testWidgets('Counter increments smoke test', (WidgetTester tester) async {
     // Build our app and trigger a frame.
-    await tester.pumpWidget(CountdownTimerDemo());
+    await tester.pumpWidget(PomodoroTimerDemo());
 
     // Verify that our counter starts at 0.
     expect(find.text('0'), findsOneWidget);
